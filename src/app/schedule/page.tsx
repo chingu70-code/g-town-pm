@@ -60,17 +60,25 @@ export default function Home() {
     }
   ]);
 
+  const [showArrows, setShowArrows] = useState(true);
+
+  // 화살표 끄기/켜기에 따라 태스크 배열 동적 변환
+  const displayTasks = showArrows 
+    ? tasks 
+    : tasks.map(t => ({ ...t, dependencies: [] }));
+
   const handleTaskChange = (task: Task) => {
     setTasks(tasks.map(t => (t.id === task.id ? task : t)));
   };
 
+  // 커스텀 툴팁
   const CustomTooltip = ({ task }: { task: Task }) => {
     return (
-      <div className="bg-white p-2 shadow-lg border rounded text-xs z-50">
-        <b className="block mb-1 text-gray-800">{task.name}</b>
-        <span className="text-gray-600">
-          {task.start.getMonth() + 1}월 {task.start.getDate()}일 ~ {task.end.getMonth() + 1}월 {task.end.getDate()}일
-        </span>
+      <div className="bg-white p-3 shadow-lg rounded border border-gray-200 text-xs z-50">
+        <strong className="block mb-1 text-blue-700">{task.name}</strong>
+        <p>시작: {task.start.toLocaleDateString()}</p>
+        <p>종료: {task.end.toLocaleDateString()}</p>
+        <p>진행률: {task.progress}%</p>
       </div>
     );
   };
@@ -104,14 +112,14 @@ export default function Home() {
   if (!isMounted) return null;
 
   return (
-    <div className="animate-in fade-in duration-500">
-      <header className="mb-6 flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
+    <div className="animate-in fade-in duration-500 h-full flex flex-col">
+      <header className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
             <LayoutDashboard className="text-blue-600 w-6 h-6" />
             과천 G타운 종합 공정표
           </h1>
-          <p className="text-xs text-gray-500 mt-2">전체 공사 기간(10개월)의 흐름을 한눈에 파악하는 대시보드입니다.</p>
+          <p className="text-xs text-gray-500 mt-2">전체 공사 기간(12개월)의 흐름을 한눈에 파악하는 대시보드입니다.</p>
         </div>
         
         {/* 빠른 네비게이션 버튼들 */}
@@ -131,6 +139,17 @@ export default function Home() {
           <div className="flex items-center gap-2">
             <Calendar className="text-blue-500 w-5 h-5" />
             <h2 className="text-lg font-semibold text-gray-800">마스터 스케줄</h2>
+            
+            {/* 화살표 토글 스위치 (UI에서 직접 끌 수 있게 제공) */}
+            <label className="ml-4 flex items-center gap-2 cursor-pointer bg-white px-2 py-1 rounded border border-gray-200 hover:bg-gray-50 transition shadow-sm">
+              <input 
+                type="checkbox" 
+                checked={showArrows} 
+                onChange={() => setShowArrows(!showArrows)}
+                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+              />
+              <span className="text-xs font-medium text-gray-700">🔗 연결선(화살표) 보기</span>
+            </label>
           </div>
           <p className="text-xs text-indigo-600 bg-indigo-50 px-2 py-1 rounded font-medium border border-indigo-100">🖨️ A3 가로 인쇄 최적화 완료</p>
         </div>
@@ -146,7 +165,7 @@ export default function Home() {
               2027년
             </div>
             <Gantt 
-              tasks={tasks} 
+              tasks={displayTasks} 
               viewMode={ViewMode.Month}
               locale="ko"
               TooltipContent={CustomTooltip}
