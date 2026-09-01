@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Calculator, DollarSign, ArrowRight, PieChart, TrendingUp, ShieldCheck } from 'lucide-react';
+import { Calculator, DollarSign, ArrowRight, PieChart, TrendingUp, ShieldCheck, StickyNote, Save } from 'lucide-react';
 import Link from 'next/link';
 import { saveToCloud } from '@/lib/syncService';
 
@@ -10,6 +10,8 @@ export default function DashboardPage() {
   const [directTotal, setDirectTotal] = useState(0);
   const [totalLabor, setTotalLabor] = useState(0);
   const [indirectOverrides, setIndirectOverrides] = useState<Record<string, number>>({});
+  const [memoContent, setMemoContent] = useState("");
+  const [isSavingMemo, setIsSavingMemo] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -32,6 +34,14 @@ export default function DashboardPage() {
         setIndirectOverrides(JSON.parse(overrides));
       } catch(e) {}
     }
+    
+    const savedMemo = localStorage.getItem('gTownMemo');
+    if (savedMemo) {
+      try {
+        const parsed = JSON.parse(savedMemo);
+        if (parsed.content) setMemoContent(parsed.content);
+      } catch(e) {}
+    }
   }, []);
 
   const handleIndirectChange = (key: string, value: string) => {
@@ -47,6 +57,15 @@ export default function DashboardPage() {
     setIndirectOverrides(newOverrides);
     localStorage.setItem('gTownIndirectOverrides', JSON.stringify(newOverrides));
     saveToCloud('project_info', 'gtown_indirects', newOverrides);
+  };
+
+  const handleSaveMemo = async () => {
+    setIsSavingMemo(true);
+    const payload = { content: memoContent, updatedAt: new Date().toISOString() };
+    localStorage.setItem('gTownMemo', JSON.stringify(payload));
+    await saveToCloud('project_info', 'gtown_memo', payload);
+    setIsSavingMemo(false);
+    alert('메모가 클라우드에 저장되었습니다.');
   };
 
   // 간접비 계산 로직 (천원 단위 이하 절사 적용)
@@ -199,6 +218,35 @@ export default function DashboardPage() {
               </tr>
             </tbody>
           </table>
+        </div>
+      </section>
+
+      {/* 특이사항 및 메모장 섹션 */}
+      <section className="bg-amber-50/80 rounded-2xl shadow-lg border border-amber-200/60 mb-8 overflow-hidden relative">
+        <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
+          <StickyNote className="w-32 h-32 text-amber-900" />
+        </div>
+        <div className="p-6 border-b border-amber-200/50 flex justify-between items-center relative z-10">
+          <h2 className="text-xl font-bold text-amber-800 flex items-center gap-2">
+            <StickyNote className="text-amber-500 w-6 h-6" />
+            특이사항 및 메모
+          </h2>
+          <button
+            onClick={handleSaveMemo}
+            disabled={isSavingMemo}
+            className="flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-50"
+          >
+            <Save className="w-4 h-4" />
+            {isSavingMemo ? "저장 중..." : "메모 클라우드 저장"}
+          </button>
+        </div>
+        <div className="p-6 relative z-10">
+          <textarea
+            value={memoContent}
+            onChange={(e) => setMemoContent(e.target.value)}
+            placeholder="수정 날짜, 금액 조율 사유, 공지사항 등을 자유롭게 메모하세요. (여기에 작성한 내용은 클라우드 저장 시 실시간으로 팀원들과 공유됩니다.)"
+            className="w-full h-48 p-4 rounded-xl border border-amber-200 bg-white/70 focus:bg-white text-slate-700 focus:outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-200 resize-none shadow-inner leading-relaxed transition-all"
+          />
         </div>
       </section>
     </div>
