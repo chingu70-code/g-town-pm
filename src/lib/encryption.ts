@@ -1,7 +1,7 @@
 ﻿import CryptoJS from 'crypto-js';
 
-// 마스터 암호 (코드 내 환경변수로 숨김 처리)
-const SECRET_KEY = process.env.NEXT_PUBLIC_ENCRYPTION_KEY || 'gtown-pm-master-secret-key-2026!';
+// Vercel 환경변수 세팅이 번거로우므로 직접 하드코딩
+const SECRET_KEY = 'gtown-super-secret-key-0901!';
 
 export const encryptData = (data: string): string => {
   return CryptoJS.AES.encrypt(data, SECRET_KEY).toString();
