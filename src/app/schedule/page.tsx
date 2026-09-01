@@ -8,57 +8,57 @@ import Link from 'next/link';
 
 export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
+  const [tasks, setTasks] = useState<Task[]>([]);
+
   useEffect(() => {
     setIsMounted(true);
-  }, []);
+    
+    // 비용 페이지(내역 편집기)에서 저장한 데이터를 불러와 간트 차트에 동기화
+    const savedCost = localStorage.getItem('gTownCostItems');
+    if (savedCost) {
+      const items = JSON.parse(savedCost);
+      
+      const headerTask: Task = {
+        start: new Date(2026, 8, 1), end: new Date(2026, 8, 30),
+        name: '📁 [1단계] 가설 및 사전 준비', id: 'Project_1', type: 'task', progress: 100, isDisabled: false, styles: { progressColor: '#94a3b8', progressSelectedColor: '#64748b' }
+      };
+      
+      const projectTask: Task = {
+        start: new Date(2026, 9, 1), end: new Date(2027, 4, 31),
+        name: '🛠️ [2단계] 직접비 공사 내역 (자동 연동)', id: 'Project_2', type: 'project', progress: 45, hideChildren: false, isDisabled: false, styles: { progressColor: '#3b82f6', progressSelectedColor: '#2563eb' }
+      };
 
-  // 전체 공사기간 10개월 기준 (26.09.01 ~ 27.06.30)
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      start: new Date(2026, 8, 1),
-      end: new Date(2026, 8, 30),
-      name: '1. 가설 및 사전 준비',
-      id: 'Project_1',
-      type: 'task',
-      progress: 100,
-      isDisabled: false,
-      styles: { progressColor: '#94a3b8', progressSelectedColor: '#64748b' }
-    },
-    {
-      start: new Date(2026, 9, 1),
-      end: new Date(2027, 4, 31), // 5월(27.05)까지
-      name: '2. [직접비] 비정형 외장판넬공사',
-      id: 'Project_2',
-      type: 'project',
-      progress: 45,
-      hideChildren: false,
-      isDisabled: false,
-      styles: { progressColor: '#3b82f6', progressSelectedColor: '#2563eb' }
-    },
-    { start: new Date(2026, 9, 1), end: new Date(2026, 9, 15), name: '1. 비정형/파라펫 구간 구조틀공사', id: 'T2_1', project: 'Project_2', type: 'task', progress: 100, isDisabled: false, styles: { progressColor: '#f59e0b', progressSelectedColor: '#d97706' }},
-    { start: new Date(2026, 9, 16), end: new Date(2026, 9, 30), name: '2. NOSING구간 구조틀 공사', id: 'T2_2', project: 'Project_2', type: 'task', progress: 80, dependencies: ['T2_1'], isDisabled: false, styles: { progressColor: '#f59e0b', progressSelectedColor: '#d97706' }},
-    { start: new Date(2026, 10, 1), end: new Date(2026, 10, 15), name: '3. 3D패널 공사', id: 'T2_3', project: 'Project_2', type: 'task', progress: 50, dependencies: ['T2_2'], isDisabled: false, styles: { progressColor: '#f59e0b', progressSelectedColor: '#d97706' }},
-    { start: new Date(2026, 10, 16), end: new Date(2026, 10, 30), name: '4. NOSING PANEL', id: 'T2_4', project: 'Project_2', type: 'task', progress: 20, dependencies: ['T2_3'], isDisabled: false, styles: { progressColor: '#f59e0b', progressSelectedColor: '#d97706' }},
-    { start: new Date(2026, 11, 1), end: new Date(2026, 11, 15), name: '5. 파라펫 두겁판넬공사', id: 'T2_5', project: 'Project_2', type: 'task', progress: 0, dependencies: ['T2_4'], isDisabled: false, styles: { progressColor: '#f59e0b', progressSelectedColor: '#d97706' }},
-    { start: new Date(2026, 11, 16), end: new Date(2026, 11, 31), name: '6. 파라펫 내측벽체판넬 공사', id: 'T2_6', project: 'Project_2', type: 'task', progress: 0, dependencies: ['T2_5'], isDisabled: false, styles: { progressColor: '#f59e0b', progressSelectedColor: '#d97706' }},
-    { start: new Date(2027, 0, 1), end: new Date(2027, 0, 15), name: '7. SOFFIT FASICA PANEL', id: 'T2_7', project: 'Project_2', type: 'task', progress: 0, dependencies: ['T2_6'], isDisabled: false, styles: { progressColor: '#f59e0b', progressSelectedColor: '#d97706' }},
-    { start: new Date(2027, 0, 16), end: new Date(2027, 0, 31), name: '8. SOFFIT PANEL', id: 'T2_8', project: 'Project_2', type: 'task', progress: 0, dependencies: ['T2_7'], isDisabled: false, styles: { progressColor: '#f59e0b', progressSelectedColor: '#d97706' }},
-    { start: new Date(2027, 1, 1), end: new Date(2027, 1, 15), name: '9. 채광창 내부 곡면판넬공사', id: 'T2_9', project: 'Project_2', type: 'task', progress: 0, dependencies: ['T2_8'], isDisabled: false, styles: { progressColor: '#f59e0b', progressSelectedColor: '#d97706' }},
-    { start: new Date(2027, 1, 16), end: new Date(2027, 2, 31), name: '10. 단열공사', id: 'T2_10', project: 'Project_2', type: 'task', progress: 0, dependencies: ['T2_9'], isDisabled: false, styles: { progressColor: '#f59e0b', progressSelectedColor: '#d97706' }},
-    { start: new Date(2027, 3, 1), end: new Date(2027, 3, 30), name: '11. AL 복합패널(비선형)_천장', id: 'T2_11', project: 'Project_2', type: 'task', progress: 0, dependencies: ['T2_10'], isDisabled: false, styles: { progressColor: '#f59e0b', progressSelectedColor: '#d97706' }},
-    { start: new Date(2027, 4, 1), end: new Date(2027, 4, 15), name: '11. AL 복합패널(비선형)_수벽', id: 'T2_12', project: 'Project_2', type: 'task', progress: 0, dependencies: ['T2_11'], isDisabled: false, styles: { progressColor: '#f59e0b', progressSelectedColor: '#d97706' }},
-    {
-      start: new Date(2027, 5, 1), 
-      end: new Date(2027, 5, 30),  // 6월 말(기존 원복)
-      name: '3. 최종 마감 및 준공 청소',
-      id: 'Project_3',
-      type: 'task',
-      progress: 0,
-      dependencies: ['T2_12'],
-      isDisabled: false,
-      styles: { progressColor: '#10b981', progressSelectedColor: '#059669' }
+      const dynamicTasks: Task[] = items.map((item: any, i: number) => {
+        // 임시 날짜 배분 로직 (월 2개씩 순차 배분)
+        const monthOffset = Math.floor(i / 2);
+        const dayOffset = (i % 2) * 15; // 1일 or 16일
+        
+        let year = 2026;
+        let month = 9 + monthOffset;
+        if (month > 11) {
+          year = 2027;
+          month = month - 12;
+        }
+
+        const sDate = new Date(year, month, dayOffset + 1);
+        const eDate = new Date(year, month, dayOffset + 14);
+        
+        return {
+          start: sDate, end: eDate,
+          name: ` └ 2-${i + 1}. ${item.name}`, id: `T_${item.id}`, project: 'Project_2', type: 'task', progress: 0, isDisabled: false,
+          styles: { progressColor: '#f59e0b', progressSelectedColor: '#d97706' }
+        };
+      });
+
+      const footerTask: Task = {
+        start: new Date(2027, 5, 1), end: new Date(2027, 5, 30),
+        name: '🧹 [3단계] 최종 마감 및 준공 청소', id: 'Project_3', type: 'task', progress: 0, isDisabled: false,
+        styles: { progressColor: '#10b981', progressSelectedColor: '#059669' }
+      };
+
+      setTasks([headerTask, projectTask, ...dynamicTasks, footerTask]);
     }
-  ]);
+  }, []);
 
   const [showArrows, setShowArrows] = useState(true);
 
@@ -155,13 +155,14 @@ export default function Home() {
         </div>
         
         {/* 노트북 등에서도 가로 스크롤이 생기지 않고 12개월이 한 눈에 들어오는 최적의 너비(1150px) 설정 */}
+        {/* 노트북 등에서도 가로 스크롤이 생기지 않고 12개월이 한 눈에 들어오는 최적의 너비(1150px) 설정 */}
         <div className="overflow-x-auto w-full pb-4">
-          <div className="mx-auto bg-white border border-gray-300 shadow-md relative w-[1150px] min-w-[1150px] overflow-hidden print:[zoom:0.85] print:shadow-none print:border-gray-200">
+          <div className="mx-auto bg-white border border-gray-300 shadow-md relative w-full min-w-[1510px] overflow-hidden print:[zoom:0.85] print:shadow-none print:border-gray-200 rounded-lg">
             {/* 커스텀 연도 헤더 */}
-            <div className="absolute top-0 left-[190px] w-[400px] h-[25px] bg-indigo-50 border-b border-r border-gray-300 flex items-center justify-center text-[11px] font-bold text-indigo-900 z-10">
+            <div className="absolute top-0 left-[190px] w-[550px] h-[25px] bg-indigo-50 border-b border-r border-gray-300 flex items-center justify-center text-[11px] font-bold text-indigo-900 z-10">
               2026년
             </div>
-            <div className="absolute top-0 left-[590px] w-[560px] h-[25px] bg-emerald-50 border-b border-gray-300 flex items-center justify-center text-[11px] font-bold text-emerald-900 z-10">
+            <div className="absolute top-0 left-[740px] w-[770px] h-[25px] bg-emerald-50 border-b border-gray-300 flex items-center justify-center text-[11px] font-bold text-emerald-900 z-10">
               2027년
             </div>
             <Gantt 
@@ -174,9 +175,9 @@ export default function Home() {
               onDateChange={handleTaskChange}
               onProgressChange={handleTaskChange}
               listCellWidth="190px" 
-              columnWidth={80}      
-              fontSize="11"         
-              rowHeight={34}        
+              columnWidth={110}      
+              fontSize="12"         
+              rowHeight={40}        
             />
           </div>
         </div>
