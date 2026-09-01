@@ -30,8 +30,8 @@ export default function CostPage() {
   const totalExpense = costItems.reduce((acc, item) => acc + (item.quantity * item.expensePrice), 0);
   const directTotal = totalMaterial + totalLabor + totalExpense;
 
-  const employmentInsurance = totalLabor * 0.0157; // 고용보험
-  const healthInsurance = totalLabor * 0.035;      // 건강보험 (가정)
+  const employmentInsurance = Math.floor(totalLabor * 0.0157); // 고용보험 (원단위 절사)
+  const healthInsurance = Math.floor(totalLabor * 0.035);      // 건강보험 (원단위 절사)
   const indirectTotal = employmentInsurance + healthInsurance;
   const grandTotal = directTotal + indirectTotal;
 
