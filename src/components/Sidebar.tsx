@@ -2,12 +2,44 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Calculator, CalendarDays, Users, Building2, ChevronRight, BarChart3, Download, Upload } from 'lucide-react';
-import React, { useRef } from 'react';
+import { LayoutDashboard, Calculator, CalendarDays, Users, Building2, ChevronRight, BarChart3, Download, Upload, Edit3 } from 'lucide-react';
+import React, { useRef, useState, useEffect } from 'react';
 
 export default function Sidebar() {
   const pathname = usePathname();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 커스텀 텍스트 상태 관리
+  const [projectName, setProjectName] = useState("G-TOWN PM");
+  const [managerName, setManagerName] = useState("이정원 부장");
+  const [siteName, setSiteName] = useState("과천 G타운 현장");
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+    const p = localStorage.getItem('pm_projectName');
+    if (p) setProjectName(p);
+    const m = localStorage.getItem('pm_managerName');
+    if (m) setManagerName(m);
+    const s = localStorage.getItem('pm_siteName');
+    if (s) setSiteName(s);
+  }, []);
+
+  const handleEdit = (type: 'project' | 'manager' | 'site', currentValue: string) => {
+    const newValue = prompt("새로운 이름을 입력하세요:", currentValue);
+    if (newValue !== null && newValue.trim() !== "") {
+      if (type === 'project') {
+        setProjectName(newValue);
+        localStorage.setItem('pm_projectName', newValue);
+      } else if (type === 'manager') {
+        setManagerName(newValue);
+        localStorage.setItem('pm_managerName', newValue);
+      } else if (type === 'site') {
+        setSiteName(newValue);
+        localStorage.setItem('pm_siteName', newValue);
+      }
+    }
+  };
 
   const navItems = [
     { name: '종합 대시보드', href: '/', icon: LayoutDashboard },
@@ -20,7 +52,10 @@ export default function Sidebar() {
   const handleExport = () => {
     const data = {
       costItems: localStorage.getItem('gTownCostItems'),
-      resources: localStorage.getItem('gTownResources')
+      resources: localStorage.getItem('gTownResources'),
+      projectName: localStorage.getItem('pm_projectName'),
+      managerName: localStorage.getItem('pm_managerName'),
+      siteName: localStorage.getItem('pm_siteName')
     };
     const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -41,6 +76,9 @@ export default function Sidebar() {
         const data = JSON.parse(event.target?.result as string);
         if (data.costItems) localStorage.setItem('gTownCostItems', data.costItems);
         if (data.resources) localStorage.setItem('gTownResources', data.resources);
+        if (data.projectName) localStorage.setItem('pm_projectName', data.projectName);
+        if (data.managerName) localStorage.setItem('pm_managerName', data.managerName);
+        if (data.siteName) localStorage.setItem('pm_siteName', data.siteName);
         alert('데이터 복원이 완료되었습니다. 페이지를 새로고침합니다.');
         window.location.reload();
       } catch (err) {
@@ -48,16 +86,18 @@ export default function Sidebar() {
       }
     };
     reader.readAsText(file);
-    // 파일 선택 초기화 (같은 파일 다시 선택 가능하도록)
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
+  if (!isMounted) return null;
+
   return (
     <aside className="fixed top-0 left-0 w-64 h-full bg-slate-900 text-slate-300 flex flex-col shadow-2xl z-50">
-      {/* 로고 영역 */}
-      <div className="h-16 flex items-center px-6 bg-slate-950 border-b border-slate-800">
-        <Building2 className="w-6 h-6 text-indigo-500 mr-3" />
-        <span className="text-lg font-bold text-white tracking-tight">G-Town PM</span>
+      {/* 로고 영역 (클릭하여 수정) */}
+      <div className="h-16 flex items-center px-6 bg-slate-950 border-b border-slate-800 cursor-pointer group" onClick={() => handleEdit('project', projectName)} title="클릭하여 프로젝트 이름 변경">
+        <Building2 className="w-6 h-6 text-indigo-500 mr-3 flex-shrink-0" />
+        <span className="text-lg font-bold text-white tracking-tight truncate w-40 group-hover:text-indigo-300 transition-colors">{projectName}</span>
+        <Edit3 className="w-3 h-3 ml-auto opacity-0 group-hover:opacity-100 text-indigo-400 transition-opacity" />
       </div>
 
       {/* 네비게이션 메뉴 */}
@@ -124,15 +164,27 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* 하단 유저 프로필 또는 정보 영역 */}
+      {/* 하단 유저 프로필 또는 정보 영역 (클릭하여 수정) */}
       <div className="p-4 border-t border-slate-800 bg-slate-900/50">
         <div className="flex items-center px-2 py-2 rounded-lg bg-slate-800/50 border border-slate-700/50">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs shadow-inner">
-            G
+          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs shadow-inner flex-shrink-0">
+            {managerName.charAt(0)}
           </div>
-          <div className="ml-3">
-            <p className="text-xs font-medium text-white">과천 G타운 현장</p>
-            <p className="text-[10px] text-slate-400">대우건설 (외장공사)</p>
+          <div className="ml-3 overflow-hidden flex-1">
+            <p 
+              className="text-xs font-medium text-white truncate hover:text-indigo-300 transition-colors cursor-pointer group flex items-center justify-between"
+              onClick={() => handleEdit('site', siteName)}
+              title="현장명 변경"
+            >
+              {siteName} <Edit3 className="w-2.5 h-2.5 opacity-0 group-hover:opacity-100" />
+            </p>
+            <p 
+              className="text-[10px] text-slate-400 truncate hover:text-indigo-300 transition-colors cursor-pointer group flex items-center justify-between mt-0.5"
+              onClick={() => handleEdit('manager', managerName)}
+              title="담당자 변경"
+            >
+              {managerName} <Edit3 className="w-2.5 h-2.5 opacity-0 group-hover:opacity-100" />
+            </p>
           </div>
         </div>
       </div>
