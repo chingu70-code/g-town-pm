@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { Gantt, Task, ViewMode } from 'gantt-task-react';
 import "gantt-task-react/dist/index.css";
-import { Calendar, LayoutDashboard } from 'lucide-react';
+import { Calendar, LayoutDashboard, Save } from 'lucide-react';
 import Link from 'next/link';
+import { saveToCloud } from '@/lib/syncService';
 
 export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
@@ -56,7 +57,28 @@ export default function Home() {
         styles: { progressColor: '#10b981', progressSelectedColor: '#059669' }
       };
 
-      setTasks([headerTask, projectTask, ...dynamicTasks, footerTask]);
+      const defaultTasks = [headerTask, projectTask, ...dynamicTasks, footerTask];
+
+      // 저장된 스케줄이 있다면 병합(Merge)
+      const savedSchedule = localStorage.getItem('gTownSchedule');
+      if (savedSchedule) {
+        try {
+          const parsedSchedule = JSON.parse(savedSchedule).map((t: any) => ({
+            ...t,
+            start: new Date(t.start),
+            end: new Date(t.end)
+          }));
+          const mergedTasks = defaultTasks.map(dt => {
+            const found = parsedSchedule.find((pt: Task) => pt.id === dt.id);
+            return found ? found : dt;
+          });
+          setTasks(mergedTasks);
+        } catch (e) {
+          setTasks(defaultTasks);
+        }
+      } else {
+        setTasks(defaultTasks);
+      }
     }
   }, []);
 
@@ -68,7 +90,20 @@ export default function Home() {
     : tasks.map(t => ({ ...t, dependencies: [] }));
 
   const handleTaskChange = (task: Task) => {
-    setTasks(tasks.map(t => (t.id === task.id ? task : t)));
+    const newTasks = tasks.map(t => (t.id === task.id ? task : t));
+    setTasks(newTasks);
+    localStorage.setItem('gTownSchedule', JSON.stringify(newTasks));
+  };
+
+  const handleProgressChange = (task: Task) => {
+    const newTasks = tasks.map(t => (t.id === task.id ? task : t));
+    setTasks(newTasks);
+    localStorage.setItem('gTownSchedule', JSON.stringify(newTasks));
+  };
+
+  const handleSaveToCloud = async () => {
+    await saveToCloud('project_info', 'gtown_schedule', tasks);
+    alert('마스터 스케줄 일정이 클라우드에 안전하게 저장되었습니다!');
   };
 
   // 커스텀 툴팁
@@ -124,6 +159,13 @@ export default function Home() {
         
         {/* 빠른 네비게이션 버튼들 */}
         <div className="flex gap-2 text-sm">
+          <button 
+            onClick={handleSaveToCloud}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 font-bold rounded border border-blue-200 hover:bg-blue-100 transition"
+          >
+            <Save className="w-4 h-4" />
+            클라우드 저장 (동기화)
+          </button>
           <Link href="/" className="px-3 py-1.5 bg-emerald-50 text-emerald-700 font-medium rounded border border-emerald-200 hover:bg-emerald-100 transition">
             비용/직접공사 상세
           </Link>

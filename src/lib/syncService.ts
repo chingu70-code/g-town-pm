@@ -59,6 +59,13 @@ export const syncAllFromCloud = async () => {
       if (dec) localStorage.setItem('gTownMemo', dec);
     }
     
+    // 6. 마스터 스케줄 데이터 가져오기
+    const { data: sData } = await supabase.from('project_info').select('encrypted_data').eq('id', 'gtown_schedule').single();
+    if (sData?.encrypted_data) {
+      const dec = decryptData(sData.encrypted_data);
+      if (dec) localStorage.setItem('gTownSchedule', dec);
+    }
+    
     return true;
   } catch (err) {
     console.warn('[Cloud Sync] 네트워크 오류 또는 초기화 전입니다. 로컬 데이터를 유지합니다.');
