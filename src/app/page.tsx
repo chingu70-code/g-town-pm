@@ -3,11 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import { Calculator, DollarSign, ArrowRight, PieChart, TrendingUp, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
+import { saveToCloud } from '@/lib/syncService';
 
 export default function DashboardPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [directTotal, setDirectTotal] = useState(0);
   const [totalLabor, setTotalLabor] = useState(0);
+  const [indirectOverrides, setIndirectOverrides] = useState<Record<string, number>>({});
 
   useEffect(() => {
     setIsMounted(true);
@@ -23,16 +25,40 @@ export default function DashboardPage() {
       setTotalLabor(labor);
       setDirectTotal(total);
     }
+    
+    const overrides = localStorage.getItem('gTownIndirectOverrides');
+    if (overrides) {
+      try {
+        setIndirectOverrides(JSON.parse(overrides));
+      } catch(e) {}
+    }
   }, []);
 
-  // 간접비 계산 로직 (원단위 절사 적용)
-  const safetyCost = 7500000; // 안전관리비/외주분 (고정)
-  const employmentInsurance = Math.floor(totalLabor * 0.0157); // 고용보험
-  const pensionInsurance = Math.floor(directTotal * 0.29 * 0.0475); // 연금보험
-  const healthInsurance = Math.floor(directTotal * 0.29 * 0.03595); // 건강보험
-  const seniorCareInsurance = Math.floor(directTotal * 0.29 * 0.04724); // 노인장기요양보험
-  const retirementDeduction = Math.floor(totalLabor * 0.023); // 퇴직공제부금비
-  const machineryGuarantee = Math.floor(directTotal * 0.0007); // 건설기계대여금지급보증 (0.07%)
+  const handleIndirectChange = (key: string, value: string) => {
+    const numValue = parseInt(value.replace(/,/g, ''), 10);
+    const newOverrides = { ...indirectOverrides };
+    
+    if (isNaN(numValue)) {
+      delete newOverrides[key];
+    } else {
+      newOverrides[key] = numValue;
+    }
+    
+    setIndirectOverrides(newOverrides);
+    localStorage.setItem('gTownIndirectOverrides', JSON.stringify(newOverrides));
+    saveToCloud('project_info', 'gtown_indirects', newOverrides);
+  };
+
+  // 간접비 계산 로직 (천원 단위 이하 절사 적용)
+  const calcFloor = (val: number) => Math.floor(val / 1000) * 1000;
+
+  const safetyCost = indirectOverrides['safety'] !== undefined ? indirectOverrides['safety'] : 7500000; // 안전관리비/외주분 (고정)
+  const employmentInsurance = indirectOverrides['employment'] !== undefined ? indirectOverrides['employment'] : calcFloor(totalLabor * 0.0157); // 고용보험
+  const pensionInsurance = indirectOverrides['pension'] !== undefined ? indirectOverrides['pension'] : calcFloor(directTotal * 0.29 * 0.0475); // 연금보험
+  const healthInsurance = indirectOverrides['health'] !== undefined ? indirectOverrides['health'] : calcFloor(directTotal * 0.29 * 0.03595); // 건강보험
+  const seniorCareInsurance = indirectOverrides['senior'] !== undefined ? indirectOverrides['senior'] : calcFloor(directTotal * 0.29 * 0.04724); // 노인장기요양보험
+  const retirementDeduction = indirectOverrides['retirement'] !== undefined ? indirectOverrides['retirement'] : calcFloor(totalLabor * 0.023); // 퇴직공제부금비
+  const machineryGuarantee = indirectOverrides['machinery'] !== undefined ? indirectOverrides['machinery'] : calcFloor(directTotal * 0.0007); // 건설기계대여금지급보증 (0.07%)
 
   const indirectTotal = safetyCost + employmentInsurance + pensionInsurance + healthInsurance + seniorCareInsurance + retirementDeduction + machineryGuarantee;
   const grandTotal = directTotal + indirectTotal;
@@ -115,43 +141,57 @@ export default function DashboardPage() {
                 <td className="p-4 font-semibold text-slate-700">안전관리비/외주분</td>
                 <td className="p-4 text-sm font-medium text-slate-500">별도테이블</td>
                 <td className="p-4 text-sm font-medium text-slate-500 text-right">-</td>
-                <td className="p-4 text-right font-semibold text-slate-800">{safetyCost.toLocaleString()}</td>
+                <td className="p-2 text-right">
+                  <input type="text" value={safetyCost.toLocaleString()} onChange={(e) => handleIndirectChange('safety', e.target.value)} className="w-full max-w-[140px] text-right p-2 border border-slate-200 rounded-md focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-semibold text-slate-800 bg-white shadow-sm transition-all" />
+                </td>
               </tr>
               <tr className="border-b border-slate-100 hover:bg-slate-50/80 transition-colors">
                 <td className="p-4 font-semibold text-slate-700">고용보험</td>
                 <td className="p-4 text-sm font-medium text-slate-500">노무비 × 1.57%</td>
                 <td className="p-4 text-sm font-medium text-slate-500 text-right">1.57%</td>
-                <td className="p-4 text-right font-semibold text-slate-800">{employmentInsurance.toLocaleString()}</td>
+                <td className="p-2 text-right">
+                  <input type="text" value={employmentInsurance.toLocaleString()} onChange={(e) => handleIndirectChange('employment', e.target.value)} className="w-full max-w-[140px] text-right p-2 border border-slate-200 rounded-md focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-semibold text-slate-800 bg-white shadow-sm transition-all" />
+                </td>
               </tr>
               <tr className="border-b border-slate-100 hover:bg-slate-50/80 transition-colors">
                 <td className="p-4 font-semibold text-slate-700">연금보험</td>
                 <td className="p-4 text-sm font-medium text-slate-500">직접비 × 29% × 4.75%</td>
                 <td className="p-4 text-sm font-medium text-slate-500 text-right">4.75%</td>
-                <td className="p-4 text-right font-semibold text-slate-800">{pensionInsurance.toLocaleString()}</td>
+                <td className="p-2 text-right">
+                  <input type="text" value={pensionInsurance.toLocaleString()} onChange={(e) => handleIndirectChange('pension', e.target.value)} className="w-full max-w-[140px] text-right p-2 border border-slate-200 rounded-md focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-semibold text-slate-800 bg-white shadow-sm transition-all" />
+                </td>
               </tr>
               <tr className="border-b border-slate-100 hover:bg-slate-50/80 transition-colors">
                 <td className="p-4 font-semibold text-slate-700">건강보험</td>
                 <td className="p-4 text-sm font-medium text-slate-500">직접비 × 29% × 3.595%</td>
                 <td className="p-4 text-sm font-medium text-slate-500 text-right">3.595%</td>
-                <td className="p-4 text-right font-semibold text-slate-800">{healthInsurance.toLocaleString()}</td>
+                <td className="p-2 text-right">
+                  <input type="text" value={healthInsurance.toLocaleString()} onChange={(e) => handleIndirectChange('health', e.target.value)} className="w-full max-w-[140px] text-right p-2 border border-slate-200 rounded-md focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-semibold text-slate-800 bg-white shadow-sm transition-all" />
+                </td>
               </tr>
               <tr className="border-b border-slate-100 hover:bg-slate-50/80 transition-colors">
                 <td className="p-4 font-semibold text-slate-700">노인장기요양보험</td>
                 <td className="p-4 text-sm font-medium text-slate-500">직접비 × 29% × 4.724%</td>
                 <td className="p-4 text-sm font-medium text-slate-500 text-right">4.724%</td>
-                <td className="p-4 text-right font-semibold text-slate-800">{seniorCareInsurance.toLocaleString()}</td>
+                <td className="p-2 text-right">
+                  <input type="text" value={seniorCareInsurance.toLocaleString()} onChange={(e) => handleIndirectChange('senior', e.target.value)} className="w-full max-w-[140px] text-right p-2 border border-slate-200 rounded-md focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-semibold text-slate-800 bg-white shadow-sm transition-all" />
+                </td>
               </tr>
               <tr className="border-b border-slate-100 hover:bg-slate-50/80 transition-colors">
                 <td className="p-4 font-semibold text-slate-700">퇴직공제부금비</td>
                 <td className="p-4 text-sm font-medium text-slate-500">노무비 × 2.3%</td>
                 <td className="p-4 text-sm font-medium text-slate-500 text-right">2.3%</td>
-                <td className="p-4 text-right font-semibold text-slate-800">{retirementDeduction.toLocaleString()}</td>
+                <td className="p-2 text-right">
+                  <input type="text" value={retirementDeduction.toLocaleString()} onChange={(e) => handleIndirectChange('retirement', e.target.value)} className="w-full max-w-[140px] text-right p-2 border border-slate-200 rounded-md focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-semibold text-slate-800 bg-white shadow-sm transition-all" />
+                </td>
               </tr>
               <tr className="border-b border-slate-100 hover:bg-slate-50/80 transition-colors">
                 <td className="p-4 font-semibold text-slate-700">건설기계대여금지급보증</td>
                 <td className="p-4 text-sm font-medium text-slate-500">직접공사비 × 0.07%</td>
                 <td className="p-4 text-sm font-medium text-slate-500 text-right">0.07%</td>
-                <td className="p-4 text-right font-semibold text-slate-800">{machineryGuarantee.toLocaleString()}</td>
+                <td className="p-2 text-right">
+                  <input type="text" value={machineryGuarantee.toLocaleString()} onChange={(e) => handleIndirectChange('machinery', e.target.value)} className="w-full max-w-[140px] text-right p-2 border border-slate-200 rounded-md focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-semibold text-slate-800 bg-white shadow-sm transition-all" />
+                </td>
               </tr>
               <tr className="bg-amber-50 rounded-lg">
                 <td colSpan={3} className="p-5 font-bold text-amber-900 text-right rounded-l-lg border-t border-amber-200">간접공사비 합계</td>

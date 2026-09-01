@@ -45,6 +45,13 @@ export const syncAllFromCloud = async () => {
       if (dec) localStorage.setItem('gTownResources', dec);
     }
     
+    // 4. 간접비 오버라이드 데이터 가져오기
+    const { data: iData } = await supabase.from('project_info').select('encrypted_data').eq('id', 'gtown_indirects').single();
+    if (iData?.encrypted_data) {
+      const dec = decryptData(iData.encrypted_data);
+      if (dec) localStorage.setItem('gTownIndirectOverrides', dec);
+    }
+    
     return true;
   } catch (err) {
     console.warn('[Cloud Sync] 네트워크 오류 또는 초기화 전입니다. 로컬 데이터를 유지합니다.');
