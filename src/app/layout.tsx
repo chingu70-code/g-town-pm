@@ -18,6 +18,11 @@ export const metadata: Metadata = {
   description: "과천 G타운 공정 관리 대시보드",
 };
 
+export const viewport = {
+  width: 1150, // 모바일에서도 데스크탑처럼 한 화면에 전체가 들어오도록 뷰포트 픽셀 고정
+  userScalable: true,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
