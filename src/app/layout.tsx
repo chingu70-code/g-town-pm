@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Sidebar from "@/components/Sidebar";
+import CloudSyncProvider from "@/components/CloudSyncProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport = {
-  width: 1150, // 모바일에서도 데스크탑처럼 한 화면에 전체가 들어오도록 뷰포트 픽셀 고정
+  width: 1150, 
   userScalable: true,
 };
 
@@ -31,12 +32,14 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex bg-slate-50 text-sm">
-        <Sidebar />
-        <main className="flex-1 overflow-x-hidden w-full p-4 sm:p-6 lg:p-8 ml-64 min-h-screen">
-          <div className="max-w-[1600px] mx-auto w-full">
-            {children}
-          </div>
-        </main>
+        <CloudSyncProvider>
+          <Sidebar />
+          <main className="flex-1 overflow-x-hidden w-full p-4 sm:p-6 lg:p-8 ml-64 min-h-screen">
+            <div className="max-w-[1600px] mx-auto w-full">
+              {children}
+            </div>
+          </main>
+        </CloudSyncProvider>
       </body>
     </html>
   );

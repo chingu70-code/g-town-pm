@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Calculator, CalendarDays, Users, Building2, ChevronRight, BarChart3, Download, Upload, Edit3 } from 'lucide-react';
 import React, { useRef, useState, useEffect } from 'react';
+import { saveToCloud } from '@/lib/syncService';
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -28,16 +29,23 @@ export default function Sidebar() {
   const handleEdit = (type: 'project' | 'manager' | 'site', currentValue: string) => {
     const newValue = prompt("새로운 이름을 입력하세요:", currentValue);
     if (newValue !== null && newValue.trim() !== "") {
+      let payload = { projectName, managerName, siteName };
+      
       if (type === 'project') {
         setProjectName(newValue);
         localStorage.setItem('pm_projectName', newValue);
+        payload.projectName = newValue;
       } else if (type === 'manager') {
         setManagerName(newValue);
         localStorage.setItem('pm_managerName', newValue);
+        payload.managerName = newValue;
       } else if (type === 'site') {
         setSiteName(newValue);
         localStorage.setItem('pm_siteName', newValue);
+        payload.siteName = newValue;
       }
+      
+      saveToCloud('project_info', 'gtown_main', payload);
     }
   };
 

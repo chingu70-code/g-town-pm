@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Calculator, DollarSign, Save, Trash2, Plus, RotateCcw } from 'lucide-react';
+import { Calculator, DollarSign, Save, Trash2, Plus, RotateCcw, RefreshCcw } from 'lucide-react';
+import { saveToCloud } from '@/lib/syncService';
 
 const INITIAL_COST_ITEMS = [
   { id: 0, name: "비주얼 목업 (Visual Mock-up)", quantity: 1, materialPrice: 15000000, laborPrice: 5000000, expensePrice: 0 },
@@ -79,13 +80,24 @@ export default function CostPage() {
           <p className="text-slate-500 mt-2 font-medium">이곳에서 직접공사비 품목을 자유롭게 수정, 추가, 삭제할 수 있습니다. 작성된 내역은 대시보드와 공정표에 실시간 자동 연동됩니다.</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={handleReset} className="flex items-center gap-2 text-sm font-semibold text-slate-600 bg-white px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 transition shadow-sm">
-            <RotateCcw className="w-4 h-4" /> 기본 견적서로 초기화
-          </button>
-          <div className="flex items-center gap-2 text-sm font-semibold text-indigo-600 bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-200 shadow-sm">
-            <Save className="w-4 h-4" /> 자동 저장 중
+            <button 
+              onClick={handleReset}
+              className="text-slate-500 hover:text-rose-500 flex items-center px-4 py-2 border border-slate-200 rounded-lg bg-white hover:bg-rose-50 font-medium transition-colors text-sm shadow-sm"
+            >
+              <RefreshCcw className="w-4 h-4 mr-2" />
+              원본 초기화
+            </button>
+            <button 
+              onClick={() => {
+                saveToCloud('cost_items', 'gtown_main', costItems);
+                alert("클라우드 서버에 안전하게 저장되었습니다!");
+              }}
+              className="text-indigo-600 flex items-center px-4 py-2 border border-indigo-200 rounded-lg bg-indigo-50 hover:bg-indigo-100 font-medium transition-colors text-sm shadow-sm"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              클라우드 저장 (동기화)
+            </button>
           </div>
-        </div>
       </header>
       
       <section className="bg-white p-2 sm:p-6 rounded-2xl shadow-lg border border-slate-100 mb-8 overflow-hidden">

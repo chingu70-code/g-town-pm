@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Users, Truck, Package, Save, Plus, Trash2, RotateCcw, UserCircle, HardHat } from 'lucide-react';
+import { saveToCloud } from '@/lib/syncService';
 
 const baseMonths = ["26.08", "26.09", "26.10", "26.11", "26.12", "27.01", "27.02", "27.03", "27.04", "27.05", "27.06", "27.07"];
 
@@ -179,9 +180,15 @@ export default function ResourcesPage() {
           <button onClick={handleReset} className="flex items-center gap-1 text-xs text-gray-600 bg-white px-2 py-1.5 rounded border border-gray-200 hover:bg-gray-50 transition shadow-sm">
             <RotateCcw className="w-3.5 h-3.5" /> 초기화
           </button>
-          <div className="flex items-center gap-1 text-xs text-indigo-600 bg-indigo-50 px-2 py-1.5 rounded border border-indigo-200 shadow-sm">
-            <Save className="w-3.5 h-3.5" /> 저장 중
-          </div>
+          <button 
+            onClick={() => {
+              saveToCloud('resources', 'gtown_main', resources);
+              alert("클라우드 서버에 안전하게 저장되었습니다!");
+            }}
+            className="flex items-center gap-1 text-xs text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-2 py-1.5 rounded border border-indigo-200 shadow-sm transition-colors"
+          >
+            <Save className="w-3.5 h-3.5" /> 클라우드 저장
+          </button>
         </div>
       </header>
       
