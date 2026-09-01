@@ -1,4 +1,4 @@
-﻿import { supabase } from './supabaseClient';
+import { supabase } from './supabaseClient';
 import { encryptData, decryptData } from './encryption';
 
 export const saveToCloud = async (tableName: string, dataId: string, rawData: any) => {
@@ -15,7 +15,7 @@ export const saveToCloud = async (tableName: string, dataId: string, rawData: an
         updated_at: new Date().toISOString()
       }, { onConflict: idColumn });
 
-    if (error) console.warn([Cloud Sync]  + tableName +  실패:, error.message);
+    if (error) console.warn("[Cloud Sync] " + tableName + " 실패:", error.message);
   } catch (err) {}
 };
 
