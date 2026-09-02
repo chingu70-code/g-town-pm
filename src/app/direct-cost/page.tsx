@@ -7,8 +7,21 @@ import { saveToCloud } from '@/lib/syncService';
 
 const INITIAL_COST_ITEMS = [
   { id: 0, name: "비주얼 목업 (Visual Mock-up)", quantity: 1, materialPrice: 15000000, laborPrice: 5000000, expensePrice: 0 },
-  { id: 1, name: "비정형/파라펫 구간 구조틀공사", quantity: 830, materialPrice: 535000, laborPrice: 238500, expensePrice: 129130 },
-  { id: 2, name: "NOSING구간 구조틀 공사", quantity: 350, materialPrice: 209590, laborPrice: 145600, expensePrice: 55140 },
+  { 
+    id: 1, name: "비정형/파라펫 구간 구조틀공사", quantity: 830, materialPrice: 535000, laborPrice: 238500, expensePrice: 129130,
+    subItems: [
+      { id: "sub_1", name: "1) SPACE FRAME", spec: "비정형구간 MAIN", unit: "식", quantity: 1, materialPrice: 348000, laborPrice: 145000, expensePrice: 57500 },
+      { id: "sub_2", name: "S/F member", spec: "STK400 일반구조용 탄소강관", unit: "개소", quantity: 4, materialPrice: 25000, laborPrice: 15000, expensePrice: 5000 },
+      { id: "sub_3", name: "T-형강 및 기타 부자재", spec: "T-100x100x8/12T 밴딩포함", unit: "식", quantity: 1, materialPrice: 87000, laborPrice: 33500, expensePrice: 51630 }
+    ]
+  },
+  { 
+    id: 2, name: "NOSING구간 구조틀 공사", quantity: 350, materialPrice: 209590, laborPrice: 145600, expensePrice: 55140,
+    subItems: [
+      { id: "sub_4", name: "T-형강(비정형)", spec: "밴딩포함", unit: "m2", quantity: 1, materialPrice: 105000, laborPrice: 65000, expensePrice: 25000 },
+      { id: "sub_5", name: "ㅁ-PIPE(곡면)외", spec: "부자재 일체", unit: "식", quantity: 1, materialPrice: 104590, laborPrice: 80600, expensePrice: 30140 }
+    ]
+  },
   { id: 3, name: "3D패널 공사", quantity: 370, materialPrice: 814590, laborPrice: 96000, expensePrice: 58030 },
   { id: 4, name: "NOSING PANEL", quantity: 350, materialPrice: 1005000, laborPrice: 200500, expensePrice: 94570 },
   { id: 5, name: "파라펫 두겁판넬공사", quantity: 200, materialPrice: 804250, laborPrice: 130850, expensePrice: 58710 },
@@ -129,11 +142,9 @@ export default function CostPage() {
                         onChange={(e) => handleChange(item.id, 'name', e.target.value)}
                         className="w-full font-semibold p-1.5 border border-transparent hover:border-slate-300 focus:border-indigo-500 rounded-lg outline-none bg-transparent focus:bg-white text-slate-800 transition-colors"
                       />
-                      {hasSubItems && (
-                        <Link href="/unit-price" className="text-emerald-500 hover:text-emerald-600 transition" title="세부 일위대가 연동 중">
-                          <FileText className="w-4 h-4" />
-                        </Link>
-                      )}
+                      <Link href="/unit-price" className={`transition shrink-0 ${hasSubItems ? 'text-emerald-500 hover:text-emerald-600' : 'text-slate-300 hover:text-slate-500'}`} title={hasSubItems ? "세부 일위대가 연동 중" : "일위대가 작성하기"}>
+                        <FileText className="w-4 h-4" />
+                      </Link>
                     </td>
                     <td className="p-3 text-right">
                       <div className="relative flex items-center justify-end">
