@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Calculator, CalendarDays, Users, Building2, ChevronRight, BarChart3, Download, Upload, Edit3 } from 'lucide-react';
+import { LayoutDashboard, Calculator, CalendarDays, Users, Building2, ChevronRight, BarChart3, Download, Upload, Edit3, FileText } from 'lucide-react';
 import React, { useRef, useState, useEffect } from 'react';
 import { saveToCloud } from '@/lib/syncService';
 
@@ -52,6 +52,7 @@ export default function Sidebar() {
   const navItems = [
     { name: '종합 대시보드', href: '/', icon: LayoutDashboard },
     { name: '직접공사비 내역', href: '/direct-cost', icon: Calculator },
+    { name: '일위대가 (단가 산출)', href: '/unit-price', icon: FileText },
     { name: '마스터 스케줄', href: '/schedule', icon: CalendarDays },
     { name: '투입 계획서', href: '/resources', icon: Users },
     { name: '통계 리포트', href: '/analytics', icon: BarChart3 },

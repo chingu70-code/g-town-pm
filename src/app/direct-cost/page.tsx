@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Calculator, DollarSign, Save, Trash2, Plus, RotateCcw, RefreshCcw } from 'lucide-react';
+import { Calculator, DollarSign, Save, Trash2, Plus, RotateCcw, RefreshCcw, Lock, FileText } from 'lucide-react';
 import { saveToCloud } from '@/lib/syncService';
 
 const INITIAL_COST_ITEMS = [
@@ -116,6 +116,7 @@ export default function CostPage() {
             </thead>
             <tbody>
               {costItems.map((item, index) => {
+                const hasSubItems = (item as any).subItems && (item as any).subItems.length > 0;
                 const itemTotal = item.quantity * (item.materialPrice + item.laborPrice + item.expensePrice);
                 return (
                   <tr key={item.id} className="border-b border-slate-100 hover:bg-slate-50/80 transition-colors group">
@@ -127,33 +128,50 @@ export default function CostPage() {
                         onChange={(e) => handleChange(item.id, 'name', e.target.value)}
                         className="w-full font-semibold p-1.5 border border-transparent hover:border-slate-300 focus:border-indigo-500 rounded-lg outline-none bg-transparent focus:bg-white text-slate-800 transition-colors"
                       />
+                      {hasSubItems && (
+                        <a href="/unit-price" className="text-emerald-500 hover:text-emerald-600 transition" title="세부 일위대가 연동 중">
+                          <FileText className="w-4 h-4" />
+                        </a>
+                      )}
                     </td>
                     <td className="p-3 text-right">
-                      <input 
-                        type="text" 
-                        value={item.materialPrice === 0 ? '' : item.materialPrice.toLocaleString()}
-                        onChange={(e) => handleChange(item.id, 'materialPrice', Number(e.target.value.replace(/,/g, '')))}
-                        className="w-24 text-right p-1.5 border border-transparent hover:border-slate-300 focus:border-indigo-500 rounded-lg outline-none text-slate-600 bg-transparent focus:bg-white font-medium transition-colors"
-                        placeholder="0"
-                      />
+                      <div className="relative flex items-center justify-end">
+                        {hasSubItems && <Lock className="w-3 h-3 text-emerald-500 absolute left-2 opacity-50" title="일위대가에서 자동 산출됨" />}
+                        <input 
+                          type="text" 
+                          readOnly={hasSubItems}
+                          value={item.materialPrice === 0 ? '' : item.materialPrice.toLocaleString()}
+                          onChange={(e) => handleChange(item.id, 'materialPrice', Number(e.target.value.replace(/,/g, '')))}
+                          className={`w-28 text-right p-1.5 border border-transparent rounded-lg outline-none font-medium transition-colors ${hasSubItems ? 'bg-slate-50 text-emerald-700 cursor-not-allowed' : 'hover:border-slate-300 focus:border-indigo-500 text-slate-600 bg-transparent focus:bg-white'}`}
+                          placeholder="0"
+                        />
+                      </div>
                     </td>
                     <td className="p-3 text-right">
-                      <input 
-                        type="text" 
-                        value={item.laborPrice === 0 ? '' : item.laborPrice.toLocaleString()}
-                        onChange={(e) => handleChange(item.id, 'laborPrice', Number(e.target.value.replace(/,/g, '')))}
-                        className="w-24 text-right p-1.5 border border-transparent hover:border-slate-300 focus:border-indigo-500 rounded-lg outline-none text-slate-600 bg-transparent focus:bg-white font-medium transition-colors"
-                        placeholder="0"
-                      />
+                      <div className="relative flex items-center justify-end">
+                        {hasSubItems && <Lock className="w-3 h-3 text-emerald-500 absolute left-2 opacity-50" title="일위대가에서 자동 산출됨" />}
+                        <input 
+                          type="text" 
+                          readOnly={hasSubItems}
+                          value={item.laborPrice === 0 ? '' : item.laborPrice.toLocaleString()}
+                          onChange={(e) => handleChange(item.id, 'laborPrice', Number(e.target.value.replace(/,/g, '')))}
+                          className={`w-28 text-right p-1.5 border border-transparent rounded-lg outline-none font-medium transition-colors ${hasSubItems ? 'bg-slate-50 text-emerald-700 cursor-not-allowed' : 'hover:border-slate-300 focus:border-indigo-500 text-slate-600 bg-transparent focus:bg-white'}`}
+                          placeholder="0"
+                        />
+                      </div>
                     </td>
                     <td className="p-3 text-right">
-                      <input 
-                        type="text" 
-                        value={item.expensePrice === 0 ? '' : item.expensePrice.toLocaleString()}
-                        onChange={(e) => handleChange(item.id, 'expensePrice', Number(e.target.value.replace(/,/g, '')))}
-                        className="w-24 text-right p-1.5 border border-transparent hover:border-slate-300 focus:border-indigo-500 rounded-lg outline-none text-slate-600 bg-transparent focus:bg-white font-medium transition-colors"
-                        placeholder="0"
-                      />
+                      <div className="relative flex items-center justify-end">
+                        {hasSubItems && <Lock className="w-3 h-3 text-emerald-500 absolute left-2 opacity-50" title="일위대가에서 자동 산출됨" />}
+                        <input 
+                          type="text" 
+                          readOnly={hasSubItems}
+                          value={item.expensePrice === 0 ? '' : item.expensePrice.toLocaleString()}
+                          onChange={(e) => handleChange(item.id, 'expensePrice', Number(e.target.value.replace(/,/g, '')))}
+                          className={`w-28 text-right p-1.5 border border-transparent rounded-lg outline-none font-medium transition-colors ${hasSubItems ? 'bg-slate-50 text-emerald-700 cursor-not-allowed' : 'hover:border-slate-300 focus:border-indigo-500 text-slate-600 bg-transparent focus:bg-white'}`}
+                          placeholder="0"
+                        />
+                      </div>
                     </td>
                     <td className="p-3 text-center">
                       <input 
