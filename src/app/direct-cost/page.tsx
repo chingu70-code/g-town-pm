@@ -129,14 +129,14 @@ export default function CostPage() {
                         className="w-full font-semibold p-1.5 border border-transparent hover:border-slate-300 focus:border-indigo-500 rounded-lg outline-none bg-transparent focus:bg-white text-slate-800 transition-colors"
                       />
                       {hasSubItems && (
-                        <a href="/unit-price" className="text-emerald-500 hover:text-emerald-600 transition" title="세부 일위대가 연동 중">
+                        <Link href="/unit-price" className="text-emerald-500 hover:text-emerald-600 transition" title="세부 일위대가 연동 중">
                           <FileText className="w-4 h-4" />
-                        </a>
+                        </Link>
                       )}
                     </td>
                     <td className="p-3 text-right">
                       <div className="relative flex items-center justify-end">
-                        {hasSubItems && <Lock className="w-3 h-3 text-emerald-500 absolute left-2 opacity-50" title="일위대가에서 자동 산출됨" />}
+                        {hasSubItems && <Lock className="w-3 h-3 text-emerald-500 absolute left-2 opacity-50" />}
                         <input 
                           type="text" 
                           readOnly={hasSubItems}
@@ -149,7 +149,7 @@ export default function CostPage() {
                     </td>
                     <td className="p-3 text-right">
                       <div className="relative flex items-center justify-end">
-                        {hasSubItems && <Lock className="w-3 h-3 text-emerald-500 absolute left-2 opacity-50" title="일위대가에서 자동 산출됨" />}
+                        {hasSubItems && <Lock className="w-3 h-3 text-emerald-500 absolute left-2 opacity-50" />}
                         <input 
                           type="text" 
                           readOnly={hasSubItems}
@@ -162,7 +162,7 @@ export default function CostPage() {
                     </td>
                     <td className="p-3 text-right">
                       <div className="relative flex items-center justify-end">
-                        {hasSubItems && <Lock className="w-3 h-3 text-emerald-500 absolute left-2 opacity-50" title="일위대가에서 자동 산출됨" />}
+                        {hasSubItems && <Lock className="w-3 h-3 text-emerald-500 absolute left-2 opacity-50" />}
                         <input 
                           type="text" 
                           readOnly={hasSubItems}
