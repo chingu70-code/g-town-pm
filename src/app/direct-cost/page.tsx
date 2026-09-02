@@ -4,35 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Calculator, DollarSign, Save, Trash2, Plus, RotateCcw, RefreshCcw, Lock, FileText } from 'lucide-react';
 import { saveToCloud } from '@/lib/syncService';
-
-const INITIAL_COST_ITEMS = [
-  { id: 0, name: "비주얼 목업 (Visual Mock-up)", quantity: 1, materialPrice: 15000000, laborPrice: 5000000, expensePrice: 0 },
-  { 
-    id: 1, name: "비정형/파라펫 구간 구조틀공사", quantity: 830, materialPrice: 535000, laborPrice: 238500, expensePrice: 129130,
-    subItems: [
-      { id: "sub_1", name: "1) SPACE FRAME", spec: "비정형구간 MAIN", unit: "식", quantity: 1, materialPrice: 348000, laborPrice: 145000, expensePrice: 57500 },
-      { id: "sub_2", name: "S/F member", spec: "STK400 일반구조용 탄소강관", unit: "개소", quantity: 4, materialPrice: 25000, laborPrice: 15000, expensePrice: 5000 },
-      { id: "sub_3", name: "T-형강 및 기타 부자재", spec: "T-100x100x8/12T 밴딩포함", unit: "식", quantity: 1, materialPrice: 87000, laborPrice: 33500, expensePrice: 51630 }
-    ]
-  },
-  { 
-    id: 2, name: "NOSING구간 구조틀 공사", quantity: 350, materialPrice: 209590, laborPrice: 145600, expensePrice: 55140,
-    subItems: [
-      { id: "sub_4", name: "T-형강(비정형)", spec: "밴딩포함", unit: "m2", quantity: 1, materialPrice: 105000, laborPrice: 65000, expensePrice: 25000 },
-      { id: "sub_5", name: "ㅁ-PIPE(곡면)외", spec: "부자재 일체", unit: "식", quantity: 1, materialPrice: 104590, laborPrice: 80600, expensePrice: 30140 }
-    ]
-  },
-  { id: 3, name: "3D패널 공사", quantity: 370, materialPrice: 814590, laborPrice: 96000, expensePrice: 58030 },
-  { id: 4, name: "NOSING PANEL", quantity: 350, materialPrice: 1005000, laborPrice: 200500, expensePrice: 94570 },
-  { id: 5, name: "파라펫 두겁판넬공사", quantity: 200, materialPrice: 804250, laborPrice: 130850, expensePrice: 58710 },
-  { id: 6, name: "파라펫 내측벽체판넬 공사", quantity: 280, materialPrice: 306390, laborPrice: 65410, expensePrice: 46470 },
-  { id: 7, name: "SOFFIT FASICA PANEL", quantity: 120, materialPrice: 412100, laborPrice: 113300, expensePrice: 58700 },
-  { id: 8, name: "SOFFIT PANEL", quantity: 135, materialPrice: 326490, laborPrice: 167020, expensePrice: 58550 },
-  { id: 9, name: "채광창 내부 곡면판넬공사", quantity: 213, materialPrice: 259220, laborPrice: 101660, expensePrice: 58700 },
-  { id: 10, name: "단열공사", quantity: 250, materialPrice: 66300, laborPrice: 39500, expensePrice: 27660 },
-  { id: 11, name: "AL 복합패널(비선형)_천장", quantity: 610, materialPrice: 681000, laborPrice: 296000, expensePrice: 120710 },
-  { id: 12, name: "AL 복합패널(비선형)_수벽", quantity: 150, materialPrice: 616230, laborPrice: 268000, expensePrice: 109700 }
-];
+import { INITIAL_COST_ITEMS } from '@/lib/initialData';
 
 export default function CostPage() {
   const [isMounted, setIsMounted] = useState(false);
@@ -44,27 +16,18 @@ export default function CostPage() {
     if (saved) {
       let parsed = JSON.parse(saved);
       let needsUpdate = false;
+      
+      // 자동 마이그레이션: subItems 가 비어있는 공종은 INITIAL_COST_ITEMS 에서 샘플 데이터를 땡겨온다.
       parsed = parsed.map((item: any) => {
-        if (item.id === 1 && (!item.subItems || item.subItems.length === 0)) {
-          needsUpdate = true;
-          return {
-            ...item,
-            subItems: [
-              { id: "sub_1", name: "1) SPACE FRAME", spec: "비정형구간 MAIN", unit: "식", quantity: 1, materialPrice: 348000, laborPrice: 145000, expensePrice: 57500 },
-              { id: "sub_2", name: "S/F member", spec: "STK400 일반구조용 탄소강관", unit: "개소", quantity: 4, materialPrice: 25000, laborPrice: 15000, expensePrice: 5000 },
-              { id: "sub_3", name: "T-형강 및 기타 부자재", spec: "T-100x100x8/12T 밴딩포함", unit: "식", quantity: 1, materialPrice: 87000, laborPrice: 33500, expensePrice: 51630 }
-            ]
-          };
-        }
-        if (item.id === 2 && (!item.subItems || item.subItems.length === 0)) {
-          needsUpdate = true;
-          return {
-            ...item,
-            subItems: [
-              { id: "sub_4", name: "T-형강(비정형)", spec: "밴딩포함", unit: "m2", quantity: 1, materialPrice: 105000, laborPrice: 65000, expensePrice: 25000 },
-              { id: "sub_5", name: "ㅁ-PIPE(곡면)외", spec: "부자재 일체", unit: "식", quantity: 1, materialPrice: 104590, laborPrice: 80600, expensePrice: 30140 }
-            ]
-          };
+        if (!item.subItems || item.subItems.length === 0) {
+          const initialItem = INITIAL_COST_ITEMS.find(init => init.id === item.id);
+          if (initialItem && initialItem.subItems && initialItem.subItems.length > 0) {
+            needsUpdate = true;
+            return {
+              ...item,
+              subItems: initialItem.subItems
+            };
+          }
         }
         return item;
       });
@@ -98,7 +61,7 @@ export default function CostPage() {
   const handleAddRow = () => {
     setCostItems(prev => [
       ...prev, 
-      { id: Date.now(), name: "새 항목 입력", quantity: 0, materialPrice: 0, laborPrice: 0, expensePrice: 0 }
+      { id: Date.now(), name: "새 항목 입력", quantity: 0, materialPrice: 0, laborPrice: 0, expensePrice: 0, subItems: [] }
     ]);
   };
 
