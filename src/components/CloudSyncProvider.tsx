@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 import { useEffect, useState } from 'react';
 import { syncAllFromCloud } from '../lib/syncService';
 import { Cloud, CloudOff } from 'lucide-react';
@@ -26,7 +26,17 @@ export default function CloudSyncProvider({ children }: { children: React.ReactN
           <><CloudOff className="w-3 h-3 text-slate-400" /> 오프라인 모드</>
         )}
       </div>
-      {children}
+      
+      {/* 동기화가 완전히 끝날 때까지 앱(자식 컴포넌트) 렌더링을 차단하여 최신 데이터를 보장함 */}
+      {syncing ? (
+        <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50">
+          <div className="w-10 h-10 rounded-full border-4 border-indigo-500 border-t-transparent animate-spin mb-4"></div>
+          <p className="text-slate-600 font-semibold animate-pulse">최신 클라우드 작업 내역을 불러오는 중입니다...</p>
+          <p className="text-slate-400 text-xs mt-2">잠시만 기다려 주세요 (안전한 암호 해독 중)</p>
+        </div>
+      ) : (
+        children
+      )}
     </>
   );
 }
