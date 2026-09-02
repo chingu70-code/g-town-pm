@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Calculator, DollarSign, Save, Trash2, Plus, RotateCcw, RefreshCcw, Lock, FileText } from 'lucide-react';
 import { saveToCloud } from '@/lib/syncService';
 
