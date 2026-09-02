@@ -38,7 +38,40 @@ export default function UnitPricePage() {
     setIsMounted(true);
     const saved = localStorage.getItem('gTownCostItems');
     if (saved) {
-      setCostItems(JSON.parse(saved));
+      let parsed = JSON.parse(saved);
+      // 자동 마이그레이션: 만약 1번과 2번 아이템에 subItems가 아예 없다면 샘플을 넣어줌
+      let needsUpdate = false;
+      parsed = parsed.map((item: any) => {
+        if (item.id === 1 && (!item.subItems || item.subItems.length === 0)) {
+          needsUpdate = true;
+          return {
+            ...item,
+            subItems: [
+              { id: "sub_1", name: "1) SPACE FRAME", spec: "비정형구간 MAIN", unit: "식", quantity: 1, materialPrice: 348000, laborPrice: 145000, expensePrice: 57500 },
+              { id: "sub_2", name: "S/F member", spec: "STK400 일반구조용 탄소강관", unit: "개소", quantity: 4, materialPrice: 25000, laborPrice: 15000, expensePrice: 5000 },
+              { id: "sub_3", name: "T-형강 및 기타 부자재", spec: "T-100x100x8/12T 밴딩포함", unit: "식", quantity: 1, materialPrice: 87000, laborPrice: 33500, expensePrice: 51630 }
+            ]
+          };
+        }
+        if (item.id === 2 && (!item.subItems || item.subItems.length === 0)) {
+          needsUpdate = true;
+          return {
+            ...item,
+            subItems: [
+              { id: "sub_4", name: "T-형강(비정형)", spec: "밴딩포함", unit: "m2", quantity: 1, materialPrice: 105000, laborPrice: 65000, expensePrice: 25000 },
+              { id: "sub_5", name: "ㅁ-PIPE(곡면)외", spec: "부자재 일체", unit: "식", quantity: 1, materialPrice: 104590, laborPrice: 80600, expensePrice: 30140 }
+            ]
+          };
+        }
+        return item;
+      });
+
+      if (needsUpdate) {
+        localStorage.setItem('gTownCostItems', JSON.stringify(parsed));
+        // 비동기로 클라우드에도 저장해줌
+        saveToCloud('cost_items', 'gtown_main', parsed);
+      }
+      setCostItems(parsed);
     }
   }, []);
 
